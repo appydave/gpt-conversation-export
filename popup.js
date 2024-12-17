@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
       
-      if (!tab.url.includes('chat.openai.com')) {
+      if (!tab.url.includes('chat.openai.com') && !tab.url.includes('chatgpt.com')) {
         throw new Error('Please open ChatGPT to extract conversations');
       }
 

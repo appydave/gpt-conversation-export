@@ -22,18 +22,30 @@ function extractConversation() {
   let threadContainer = document.querySelector('main div.flex.flex-col.items-center');
   let messages = threadContainer ? Array.from(threadContainer.querySelectorAll('div.group.w-full')) : [];
   
+  // Log DOM structure for debugging
+  console.log('Current page DOM structure:', document.body.innerHTML);
+  
   // If not found, try chatgpt.com structure
   if (!messages.length) {
+    console.log('Trying chatgpt.com selectors...');
     // Try multiple possible selectors for chatgpt.com
     const possibleContainers = [
+      // Primary selectors based on the screenshot
+      '[class*="conversation-content"]',
+      '[class*="message-list"]',
+      // General chat container selectors
       '[class*="conversation-thread"]',
       '[class*="chat-message-list"]',
       '[class*="chat-container"]',
       '[class*="message-container"]',
       '[class*="chat-content"]',
       '[class*="chat-messages"]',
-      'main [class*="overflow"]',
-      'main [class*="chat"]'
+      // Fallback selectors
+      'main div[class*="overflow"]',
+      'main div[class*="chat"]',
+      // Direct parent selectors
+      '.overflow-y-auto',
+      'main > div > div'
     ];
     
     for (const selector of possibleContainers) {
@@ -46,8 +58,11 @@ function extractConversation() {
   }
 
   if (!messages.length) {
-    throw new Error('No messages found. Make sure you are on a ChatGPT conversation page and it has loaded completely');
+    console.error('No messages found. DOM structure:', document.body.innerHTML);
+    throw new Error('No messages found. Make sure you are on a ChatGPT conversation page and it has loaded completely. If the issue persists, please try refreshing the page.');
   }
+  
+  console.log(`Found ${messages.length} messages to extract`);
 
   let conversationText = '';
   messages.forEach((message) => {
@@ -63,18 +78,27 @@ function extractConversation() {
     
     // Try different content selectors with fallbacks
     const contentSelectors = [
-      '[class*="text-base"]',
+      // Primary selectors for chatgpt.com
       '[class*="message-content"]',
+      '[class*="message-text"]',
+      '[class*="message-body"]',
+      // General content selectors
+      '[class*="text-base"]',
       '[class*="bubble-content"]',
       '[class*="chat-message-text"]',
       '[class*="markdown-content"]',
-      '[class*="message-body"]',
       '[class*="content"]',
+      // Data attribute selectors
       '[data-message-content]',
       '[data-content]',
+      '[data-testid*="message"]',
+      // Fallback element selectors
+      '.text-base',
       'pre',
       'p'
     ];
+    
+    console.log('Trying to extract content with selectors:', contentSelectors);
     
     let text = '';
     // Try to find content using selectors
