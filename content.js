@@ -19,8 +19,8 @@ function extractConversation() {
   
   // If not found, try chatgpt.com structure
   if (!messages.length) {
-    threadContainer = document.querySelector('.conversation-thread');
-    messages = threadContainer ? Array.from(threadContainer.querySelectorAll('.message')) : [];
+    threadContainer = document.querySelector('.conversation-thread, .chat-message-list');
+    messages = threadContainer ? Array.from(threadContainer.querySelectorAll('.message, .chat-message')) : [];
   }
 
   if (!messages.length) {
@@ -33,12 +33,13 @@ function extractConversation() {
     let isUser = message.querySelector('img[alt="User"]') !== null;
     if (!isUser) {
       isUser = message.classList.contains('user-message') || 
-               message.querySelector('.user-bubble') !== null;
+               message.querySelector('.user-bubble') !== null ||
+               message.classList.contains('chat-message-user');
     }
     const role = isUser ? 'User' : 'Assistant';
     
     // Try different content selectors
-    const contentSelectors = ['.text-base', '.message-content', '.bubble-content'];
+    const contentSelectors = ['.text-base', '.message-content', '.bubble-content', '.chat-message-text', 'p'];
     let content;
     for (const selector of contentSelectors) {
       content = message.querySelector(selector);
