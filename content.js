@@ -2,11 +2,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'extractConversation') {
     try {
       const conversation = extractConversation();
-      navigator.clipboard.writeText(conversation)
-        .then(() => sendResponse({success: true}))
-        .catch(error => sendResponse({success: false, error: 'Failed to copy to clipboard'}));
-      return true; // Keep the message channel open for async response
+      if (!conversation) {
+        throw new Error('No conversation content found');
+      }
+      
+      // Use execCommand as fallback for clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = conversation;
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      const success = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (success) {
+        sendResponse({success: true});
+      } else {
+        // Try clipboard API if execCommand fails
+        navigator.clipboard.writeText(conversation)
+          .then(() => sendResponse({success: true}))
+          .catch(error => {
+            console.error('Clipboard error:', error);
+            sendResponse({success: false, error: 'Failed to copy: ' + error.message});
+          });
+      }
+      return true;
     } catch (error) {
+      console.error('Extraction error:', error);
       sendResponse({success: false, error: error.message});
     }
   }
