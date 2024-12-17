@@ -28,6 +28,26 @@ A Chrome extension that allows you to easily extract and copy text from ChatGPT 
 3. Click "Extract Conversation" to copy the current chat to your clipboard
 4. The extension will show a success message when the conversation is copied
 
+## Testing the Extension
+
+1. Installation Verification:
+   - After installation, check Chrome's extension page (chrome://extensions)
+   - Verify the extension appears with the green plus icon
+   - Ensure "Developer mode" is enabled
+
+2. Basic Functionality Test:
+   - Open ChatGPT in a new tab
+   - Have a short conversation (at least 2-3 messages)
+   - Click the extension icon
+   - Press "Extract Conversation"
+   - Verify the success message appears
+   - Paste the copied text to verify the format
+
+3. Error Handling Test:
+   - Try using the extension on a non-ChatGPT page
+   - Verify you receive an appropriate error message
+   - Close and reopen ChatGPT to ensure persistence
+
 ## Technical Details
 
 - Built with Chrome Extension Manifest V3
