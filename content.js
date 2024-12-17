@@ -13,24 +13,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function extractConversation() {
-  const threadContainer = document.querySelector('main div.flex.flex-col.items-center');
-  if (!threadContainer) {
-    throw new Error('Could not find conversation thread');
+  // Try chat.openai.com structure first
+  let threadContainer = document.querySelector('main div.flex.flex-col.items-center');
+  let messages = threadContainer ? Array.from(threadContainer.querySelectorAll('div.group.w-full')) : [];
+  
+  // If not found, try chatgpt.com structure
+  if (!messages.length) {
+    threadContainer = document.querySelector('.conversation-thread');
+    messages = threadContainer ? Array.from(threadContainer.querySelectorAll('.message')) : [];
   }
 
-  const messages = Array.from(threadContainer.querySelectorAll('div.group.w-full'));
   if (!messages.length) {
     throw new Error('No messages found in the conversation');
   }
 
   let conversationText = '';
-  messages.forEach((message, index) => {
-    // Determine if message is from user or assistant
-    const isUser = message.querySelector('img[alt="User"]') !== null;
+  messages.forEach((message) => {
+    // Try different selectors for user/assistant identification
+    let isUser = message.querySelector('img[alt="User"]') !== null;
+    if (!isUser) {
+      isUser = message.classList.contains('user-message') || 
+               message.querySelector('.user-bubble') !== null;
+    }
     const role = isUser ? 'User' : 'Assistant';
     
-    // Extract message content
-    const content = message.querySelector('.text-base');
+    // Try different content selectors
+    const contentSelectors = ['.text-base', '.message-content', '.bubble-content'];
+    let content;
+    for (const selector of contentSelectors) {
+      content = message.querySelector(selector);
+      if (content) break;
+    }
+
     if (content) {
       const text = content.textContent.trim();
       conversationText += `${role}: ${text}\n\n`;

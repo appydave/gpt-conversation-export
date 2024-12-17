@@ -23,7 +23,7 @@ A Chrome extension that allows you to easily extract and copy text from ChatGPT 
 
 ## Usage
 
-1. Navigate to [chat.openai.com](https://chat.openai.com)
+1. Navigate to [chat.openai.com](https://chat.openai.com) or [chatgpt.com](https://chatgpt.com)
 2. Click the extension icon (green plus sign) in your Chrome toolbar
 3. Click "Extract Conversation" to copy the current chat to your clipboard
 4. The extension will show a success message when the conversation is copied
