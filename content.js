@@ -13,41 +13,86 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function extractConversation() {
+  // Check if we're on a Cloudflare verification page
+  if (document.querySelector('#challenge-running')) {
+    throw new Error('Please complete the Cloudflare verification first');
+  }
+
   // Try chat.openai.com structure first
   let threadContainer = document.querySelector('main div.flex.flex-col.items-center');
   let messages = threadContainer ? Array.from(threadContainer.querySelectorAll('div.group.w-full')) : [];
   
   // If not found, try chatgpt.com structure
   if (!messages.length) {
-    threadContainer = document.querySelector('.conversation-thread, .chat-message-list');
-    messages = threadContainer ? Array.from(threadContainer.querySelectorAll('.message, .chat-message')) : [];
+    // Try multiple possible selectors for chatgpt.com
+    const possibleContainers = [
+      '[class*="conversation-thread"]',
+      '[class*="chat-message-list"]',
+      '[class*="chat-container"]',
+      '[class*="message-container"]',
+      '[class*="chat-content"]',
+      '[class*="chat-messages"]',
+      'main [class*="overflow"]',
+      'main [class*="chat"]'
+    ];
+    
+    for (const selector of possibleContainers) {
+      threadContainer = document.querySelector(selector);
+      if (threadContainer) {
+        messages = Array.from(threadContainer.querySelectorAll('.message, .chat-message, .chat-entry'));
+        if (messages.length) break;
+      }
+    }
   }
 
   if (!messages.length) {
-    throw new Error('No messages found in the conversation');
+    throw new Error('No messages found. Make sure you are on a ChatGPT conversation page and it has loaded completely');
   }
 
   let conversationText = '';
   messages.forEach((message) => {
     // Try different selectors for user/assistant identification
-    let isUser = message.querySelector('img[alt="User"]') !== null;
+    let isUser = message.querySelector('img[alt*="User" i]') !== null;
     if (!isUser) {
-      isUser = message.classList.contains('user-message') || 
-               message.querySelector('.user-bubble') !== null ||
-               message.classList.contains('chat-message-user');
+      isUser = message.classList.toString().toLowerCase().includes('user') || 
+               message.querySelector('[class*="user" i]') !== null ||
+               message.getAttribute('data-author') === 'user' ||
+               message.getAttribute('data-role') === 'user';
     }
     const role = isUser ? 'User' : 'Assistant';
     
-    // Try different content selectors
-    const contentSelectors = ['.text-base', '.message-content', '.bubble-content', '.chat-message-text', 'p'];
-    let content;
+    // Try different content selectors with fallbacks
+    const contentSelectors = [
+      '[class*="text-base"]',
+      '[class*="message-content"]',
+      '[class*="bubble-content"]',
+      '[class*="chat-message-text"]',
+      '[class*="markdown-content"]',
+      '[class*="message-body"]',
+      '[class*="content"]',
+      '[data-message-content]',
+      '[data-content]',
+      'pre',
+      'p'
+    ];
+    
+    let text = '';
+    // Try to find content using selectors
     for (const selector of contentSelectors) {
-      content = message.querySelector(selector);
-      if (content) break;
+      const content = message.querySelector(selector);
+      if (content) {
+        text = content.textContent.trim();
+        break;
+      }
+    }
+    
+    // If no content found through selectors, try getting direct text content
+    if (!text) {
+      text = message.textContent.trim();
     }
 
-    if (content) {
-      const text = content.textContent.trim();
+    // Only add non-empty messages
+    if (text) {
       conversationText += `${role}: ${text}\n\n`;
     }
   });
