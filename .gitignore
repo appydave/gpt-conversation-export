@@ -1,0 +1,8 @@
+node_modules/
+.replit
+.breakpoints
+.config/
+replit.nix
+.upm/
+package-lock.json
+chrome-extension.zip
