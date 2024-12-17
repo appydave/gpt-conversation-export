@@ -29,20 +29,20 @@ const debugInfo = {
   markdown: document.querySelectorAll('div[class*="markdown-content-"]').length
 };
 console.log('ChatGPT Interface Debug Info:', debugInfo);
-  const isChatGPTCom = window.location.hostname === 'chatgpt.com';
+  const isChatGPTCom = window.location.hostname.includes('chatgpt.com');
   console.log('Is ChatGPT.com:', isChatGPTCom);
   console.log('Current URL:', window.location.href);
 
   // Define selectors based on the interface version
   const containerSelectors = isChatGPTCom ? [
     // ChatGPT.com specific selectors for new interface
-    'div[class*="conversation-turn"]',
+    'div[class*="conversation-turn-"]',
     'div[data-testid="conversation-turn"]',
-    'div[data-message-id]',
-    // Remix route based selectors
-    'div[class*="message-content-"]',
     'div[class*="text-message-content-"]',
-    'div[class*="markdown-content-"]'
+    'div[class*="markdown-content-"]',
+    'div[data-message-author-role]',
+    'div[data-message-id]',
+    'div[role="presentation"]'
   ] : [
     // chat.openai.com selectors
     'main div.flex.flex-col.items-center',
@@ -101,12 +101,13 @@ console.log('ChatGPT Interface Debug Info:', debugInfo);
     const contentSelectors = isChatGPTCom ? [
       // ChatGPT.com specific selectors for new interface
       'div[data-message-content="true"]',
-      'div[data-message-author-role] div[class*="text-message-content-"]',
-      'div[class*="markdown-content-"]',
-      'div[class*="message-content-"]',
+      'div[class*="text-message-content-"]',
       'div[class*="prose"]',
       'div[role="presentation"]',
-      'pre code'
+      'div[class*="markdown"]',
+      'div[class*="content"]',
+      'pre code',
+      'p'
     ] : [
       // chat.openai.com selectors
       '[class*="message-content"]',
